@@ -1,0 +1,24 @@
+{
+  "name": "sankore",
+  "version": "0.1.0",
+  "description": "Boîte à outils de paiement pour l'Afrique de l'Ouest — mobile money, banque, microfinance, portefeuille et carte sous un seul contrat.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Thioye <thioyenouhoummariko@gmail.com>",
+  "keywords": [
+    "payment", "mobile-money", "west-africa", "afrique",
+    "orange-money", "wave", "moov", "mtn-momo",
+    "xof", "fcfa", "microfinance", "bceao"
+  ],
+  "engines": {
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}
