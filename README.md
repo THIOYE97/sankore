@@ -143,6 +143,18 @@ Les adaptateurs vers les agrégateurs réels sont en cours.
 
 Contributions bienvenues, en particulier pour les corridors que je ne pratique pas directement.
 
+---
+
+## Qui édite Sankoré
+
+Sankoré est développé par **[RelayOps](https://relayops.africa)** — technologie des opérations en Afrique de l'Ouest, depuis Bamako, Mali.
+
+Il est né de l'intégration de **six agrégateurs de paiement** sur des flux de transfert d'argent transfrontalier en production. Ce que vous lisez ici, ce sont les décisions qui ont survécu au terrain.
+
+**Il est et restera libre.** Nous le maintenons parce qu'il sert notre propre travail.
+
+Si vous préférez ne pas intégrer vous-même, nous proposons l'audit, l'intégration et la maintenance de flux de paiement ouest-africains : `thioyenouhoummariko@gmail.com`.
+
 ## Licence
 
 MIT
