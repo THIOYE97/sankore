@@ -42,3 +42,11 @@ export {
     DuplicateInFlightError,
 } from './core/idempotency.ts';
 export type { IdempotencyStore, IdempotencyRecord, IdempotencyOptions } from './core/idempotency.ts';
+
+// Mécanique HTTP réutilisable par tout adaptateur fournisseur.
+export { HttpClient, mapHttpStatus, verifyHmacSignature } from './core/http.ts';
+export type { HttpOptions, HttpRequest, HttpResponse } from './core/http.ts';
+
+// Fournisseur simulateur — tests d'intégration et démonstrations.
+export { SandboxProvider } from './providers/sandbox.ts';
+export type { SandboxOptions, Scenario } from './providers/sandbox.ts';

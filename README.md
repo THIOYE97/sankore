@@ -87,6 +87,14 @@ try {
 
 ---
 
+## Démonstration
+
+```bash
+npm run demo
+```
+
+Déroule les sept situations réelles d'un paiement ouest-africain — dont le **délai dépassé**, celle que presque personne ne traite. Aucun identifiant, aucun réseau : le fournisseur simulateur (`SandboxProvider`) implémente réellement le contrat et conserve son état.
+
 ## Installation
 
 ```bash
@@ -98,16 +106,40 @@ Node 22.6+ requis.
 ## Tests
 
 ```bash
-npm test     # 34 tests, aucune dépendance
+npm test     # 56 tests, aucune dépendance
 ```
 
 ---
 
+## Écrire son propre adaptateur
+
+`HttpClient` fournit le plus difficile : délais d'attente, reprises à backoff exponentiel **limitées aux erreurs sûres**, en-tête d'idempotence, traduction des statuts HTTP. `verifyHmacSignature` vérifie les webhooks en temps constant.
+
+Il ne reste que les particularités du fournisseur : URL, authentification, format du payload.
+
+```ts
+class MonOperateur implements PaymentProvider {
+  readonly name = 'mon-operateur';
+  private http = new HttpClient({ baseUrl: 'https://api.exemple.com' });
+
+  capabilities() { return [{ rail: 'mobile_money', country: 'ML', currency: 'XOF', direction: 'payout' }]; }
+
+  async execute(req) {
+    const res = await this.http.request(
+      { method: 'POST', path: '/payouts', body: { /* … */ }, idempotencyKey: req.reference },
+      this.name
+    );
+    // traduire la réponse en PaymentResult
+  }
+  // fetchStatus, parseWebhook…
+}
+```
+
 ## État du projet
 
-Le **cœur est stable et testé** : `Money`, la machine à états, la taxonomie d'erreurs, le routeur et l'idempotence.
+Le **cœur est stable et testé** : `Money`, machine à états, taxonomie d'erreurs, routeur, idempotence, mécanique HTTP et fournisseur simulateur.
 
-Les adaptateurs fournisseurs sont en cours. Le contrat `PaymentProvider` est public et documenté : écrire le sien prend une heure.
+Les adaptateurs vers les agrégateurs réels sont en cours.
 
 Contributions bienvenues, en particulier pour les corridors que je ne pratique pas directement.
 
