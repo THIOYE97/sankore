@@ -50,6 +50,29 @@ export interface PaymentRequest {
     metadata?: Record<string, string>;
 }
 
+/**
+ * Ce que le CLIENT FINAL doit faire pour qu'un encaissement aboutisse.
+ *
+ * Accompagne systématiquement un statut `action_required`. Le `message` vient
+ * du fournisseur et est rédigé pour être montré tel quel — il porte souvent
+ * l'information qu'on ne peut pas deviner (le code USSD exact, le délai).
+ */
+export type PaymentAction =
+    /** Le client reçoit un code et le renvoie via `confirm()`. */
+    | { type: 'otp'; message: string }
+    /** Le client compose une syntaxe USSD sur son téléphone. Rien à renvoyer : le fournisseur notifiera. */
+    | { type: 'ussd'; message: string }
+    /** Le client doit être envoyé sur une page externe. */
+    | {
+          type: 'redirect';
+          message: string;
+          url: string;
+          /** Verbe HTTP à employer pour la redirection. `get` le plus souvent. */
+          method?: string;
+          /** Paramètres ou corps à transmettre avec la redirection. */
+          data?: unknown;
+      };
+
 export interface PaymentResult {
     reference: string;
     status: PaymentStatus;
@@ -59,6 +82,8 @@ export interface PaymentResult {
     fee?: Money;
     /** Erreur normalisée si le statut est `failed`. */
     error?: PaymentError;
+    /** Présent si et seulement si le statut est `action_required`. */
+    action?: PaymentAction;
     /** Réponse brute, conservée pour l'audit. Jamais interprétée par l'application. */
     raw?: unknown;
 }
@@ -108,6 +133,16 @@ export interface PaymentProvider {
      * répondre 401 et surtout ne rien modifier.
      */
     parseWebhook(payload: unknown, headers: Record<string, string>): WebhookEvent | null;
+
+    /**
+     * Transmet le code que le client a reçu, après un statut `action_required`
+     * de type `otp`.
+     *
+     * Optionnel : seuls les fournisseurs qui encaissent en ont besoin. Les
+     * actions `ussd` et `redirect` ne passent pas par ici — elles se dénouent
+     * côté client, et c'est le webhook qui l'annonce.
+     */
+    confirm?(reference: string, code: string): Promise<PaymentResult>;
 
     /** Solde disponible, quand le fournisseur l'expose. */
     balance?(currency: Currency, country?: CountryCode): Promise<Money>;

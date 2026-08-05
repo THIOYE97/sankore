@@ -11,16 +11,32 @@
  */
 
 export type PaymentStatus =
-    | 'pending'      // créé localement, pas encore transmis
-    | 'processing'   // accepté par le fournisseur, en cours
-    | 'succeeded'    // fonds transférés — état FINAL
-    | 'failed'       // échec définitif — état FINAL
-    | 'reversed'     // succès puis annulé/remboursé — état FINAL
-    | 'expired';     // jamais confirmé dans le délai — état FINAL
+    | 'pending'          // créé localement, pas encore transmis
+    | 'action_required'  // le CLIENT doit agir : code OTP, USSD, redirection
+    | 'processing'       // accepté par le fournisseur, en cours
+    | 'succeeded'        // fonds transférés — état FINAL
+    | 'failed'           // échec définitif — état FINAL
+    | 'reversed'         // succès puis annulé/remboursé — état FINAL
+    | 'expired';         // jamais confirmé dans le délai — état FINAL
 
+/**
+ * `action_required` existe pour l'ENCAISSEMENT. Décaisser est un ordre : on
+ * envoie, ça part. Encaisser est une demande : le client doit composer un code
+ * USSD, saisir un OTP ou revenir d'une page de redirection. Tant qu'il ne l'a
+ * pas fait, l'opération n'est ni en cours ni échouée — elle attend une personne.
+ *
+ * Confondre cet état avec `processing` conduit à interroger en boucle un
+ * paiement qui n'avancera jamais tout seul, et à ne jamais afficher au client
+ * ce qu'on attend de lui.
+ *
+ * Note : `processing -> action_required` est autorisé. Certains fournisseurs
+ * accusent réception avant de réclamer l'OTP — le retour en arrière est réel,
+ * et le refuser ferait perdre l'action à afficher.
+ */
 const TRANSITIONS: Record<PaymentStatus, readonly PaymentStatus[]> = {
-    pending: ['processing', 'failed', 'expired'],
-    processing: ['succeeded', 'failed', 'expired'],
+    pending: ['action_required', 'processing', 'failed', 'expired'],
+    action_required: ['processing', 'succeeded', 'failed', 'expired'],
+    processing: ['action_required', 'succeeded', 'failed', 'expired'],
     // Un paiement réussi ne peut QUE être annulé — jamais « échouer » après coup.
     succeeded: ['reversed'],
     failed: [],
