@@ -25,6 +25,7 @@ export type {
     PaymentProvider,
     PaymentRequest,
     PaymentResult,
+    PaymentAction,
     Capability,
     Account,
     WebhookEvent,
@@ -50,3 +51,7 @@ export type { HttpOptions, HttpRequest, HttpResponse } from './core/http.ts';
 // Fournisseur simulateur — tests d'intégration et démonstrations.
 export { SandboxProvider } from './providers/sandbox.ts';
 export type { SandboxOptions, Scenario } from './providers/sandbox.ts';
+
+// Adaptateurs vers les agrégateurs réels.
+export { Hub2Provider } from './providers/hub2.ts';
+export type { Hub2Options, Hub2RedirectionUrls } from './providers/hub2.ts';
