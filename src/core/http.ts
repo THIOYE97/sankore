@@ -33,6 +33,14 @@ export interface HttpRequest {
     headers?: Record<string, string>;
     /** Transmise en en-tête d'idempotence quand le fournisseur le supporte. */
     idempotencyKey?: string;
+    /**
+     * Surcharge le nombre de reprises pour CETTE requête.
+     *
+     * À mettre à 0 sur toute requête qui crée un mouvement d'argent : un 502 sur
+     * un POST de création ne dit pas que rien n'a été engagé. Lire est rejouable,
+     * écrire ne l'est pas — cette distinction se décide par requête, pas par client.
+     */
+    maxRetries?: number;
 }
 
 export interface HttpResponse {
@@ -73,8 +81,9 @@ export class HttpClient {
 
     async request(req: HttpRequest, providerName: string): Promise<HttpResponse> {
         let lastError: PaymentError | undefined;
+        const maxRetries = req.maxRetries ?? this.maxRetries;
 
-        for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
             if (attempt > 0) {
                 // Backoff exponentiel : 300 ms, 600 ms, 1200 ms…
                 await sleep(this.retryBaseMs * 2 ** (attempt - 1));
