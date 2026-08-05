@@ -7,3 +7,6 @@ dist/
 .DS_Store
 coverage/
 *.tsbuildinfo
+
+# Statistiques de trafic — données privées, à ne pas publier
+.trafic/

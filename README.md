@@ -249,10 +249,40 @@ Sankoré est développé par **[RelayOps](https://relayops.africa)** — technol
 
 Il est né de l'intégration de **six agrégateurs de paiement** sur des flux de transfert d'argent transfrontalier en production. Ce que vous lisez ici, ce sont les décisions qui ont survécu au terrain.
 
-**Il est et restera libre.** Nous le maintenons parce qu'il sert notre propre travail.
+**Il restera lisible, auditable et gratuit pour le logiciel libre.** Nous le maintenons parce qu'il sert notre propre travail.
 
-Si vous préférez ne pas intégrer vous-même, nous proposons l'audit, l'intégration et la maintenance de flux de paiement ouest-africains : `thioyenouhoummariko@gmail.com`.
+Si vous préférez ne pas intégrer vous-même, nous proposons l'audit, l'intégration et la maintenance de flux de paiement ouest-africains : `contact@relayops.africa`.
+
+---
 
 ## Licence
 
-MIT
+Sankoré est publié en **double licence**.
+
+### GNU AGPL v3 — pour lire, étudier, contribuer, et pour le logiciel libre
+
+Le texte complet est dans [LICENSE](LICENSE). Concrètement :
+
+| Vous voulez… | AGPL |
+|---|---|
+| Lire le code, l'auditer, l'étudier avant de nous parler | ✅ sans aucune condition |
+| L'utiliser dans un projet lui-même sous AGPL | ✅ |
+| Le modifier, le republier sous AGPL | ✅ |
+| L'intégrer dans un produit propriétaire | ❌ licence commerciale requise |
+| L'intégrer dans un service en ligne fermé | ❌ licence commerciale requise |
+
+⚠️ **La clause réseau de l'AGPL est le point important.** Contrairement à la GPL, faire tourner Sankoré derrière une API — sans jamais distribuer de binaire — déclenche l'obligation de publier le code source de l'ensemble du service sous AGPL. C'est le cas d'usage normal d'une bibliothèque de paiement : lisez-la avant de choisir.
+
+### Licence commerciale — pour tout le reste
+
+Un produit fermé, un SaaS propriétaire, une plateforme interne que vous ne voulez pas publier : `contact@relayops.africa`.
+
+Elle est délibérément simple à obtenir. Nous préférons de loin une licence payée à une violation ignorée.
+
+### Pourquoi pas MIT
+
+Parce que lire et redistribuer ne sont pas la même chose.
+
+Nous voulons que vous **lisiez** ce code — c'est tout l'intérêt de le publier, et c'est gratuit. Ce que nous ne souhaitons pas, c'est qu'un tiers l'intègre dans un produit fermé et le revende sans contrepartie. L'AGPL sépare exactement ces deux cas.
+
+© 2026 RelayOps — Bamako, Mali.

@@ -3,12 +3,21 @@
   "version": "0.1.0",
   "description": "Boîte à outils de paiement pour l'Afrique de l'Ouest — mobile money, banque, microfinance, portefeuille et carte sous un seul contrat.",
   "type": "module",
-  "license": "MIT",
-  "author": "Thioye <thioyenouhoummariko@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "author": "RelayOps <contact@relayops.africa>",
   "keywords": [
-    "payment", "mobile-money", "west-africa", "afrique",
-    "orange-money", "wave", "moov", "mtn-momo",
-    "xof", "fcfa", "microfinance", "bceao"
+    "payment",
+    "mobile-money",
+    "west-africa",
+    "afrique",
+    "orange-money",
+    "wave",
+    "moov",
+    "mtn-momo",
+    "xof",
+    "fcfa",
+    "microfinance",
+    "bceao"
   ],
   "engines": {
     "node": ">=22.6"
@@ -21,5 +30,13 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "typescript": "^5.6.0"
+  },
+  "homepage": "https://relayops.africa",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/THIOYE97/sankore.git"
+  },
+  "bugs": {
+    "url": "https://github.com/THIOYE97/sankore/issues"
   }
 }

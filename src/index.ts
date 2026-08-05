@@ -3,6 +3,19 @@
  *
  * Un seul contrat pour le mobile money, la banque, la microfinance,
  * les portefeuilles et la carte — quel que soit l'agrégateur derrière.
+ *
+ * Copyright © 2026 RelayOps — Bamako, Mali. <contact@relayops.africa>
+ *
+ * Ce programme est un logiciel libre : vous pouvez le redistribuer et le
+ * modifier selon les termes de la GNU Affero General Public License, version 3
+ * ou toute version ultérieure, publiée par la Free Software Foundation.
+ *
+ * Il est distribué dans l'espoir qu'il sera utile, mais SANS AUCUNE GARANTIE,
+ * ni explicite ni implicite. Voir la GNU AGPL pour les détails : le fichier
+ * LICENSE, ou https://www.gnu.org/licenses/.
+ *
+ * Pour un usage en produit ou service propriétaire, une licence commerciale
+ * est disponible : contact@relayops.africa
  */
 
 export { Money, MoneyError, currencyExponent } from './core/money.ts';
