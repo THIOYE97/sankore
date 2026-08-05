@@ -20,12 +20,14 @@
     "bceao"
   ],
   "engines": {
-    "node": ">=22.6"
+    "node": ">=20"
   },
   "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "test": "node --experimental-strip-types --test test/*.test.ts",
     "demo": "node --experimental-strip-types demo.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
@@ -38,5 +40,20 @@
   },
   "bugs": {
     "url": "https://github.com/THIOYE97/sankore/issues"
-  }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false
 }

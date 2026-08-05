@@ -106,7 +106,9 @@ Déroule les sept situations réelles d'un paiement ouest-africain — dont le *
 npm install sankore
 ```
 
-Node 22.6+ requis.
+**Node 20+.** Le paquet publié est du JavaScript ESM avec ses déclarations de types — aucun drapeau, aucune dépendance d'exécution.
+
+Le *développement* de Sankoré demande Node 22.6+ : les sources tournent directement en TypeScript, sans étape de compilation.
 
 ## Tests
 

@@ -1,0 +1,33 @@
+{
+  // Configuration de PUBLICATION.
+  //
+  // Le développement tourne sur `node --experimental-strip-types`, qui lit le
+  // TypeScript directement. On pourrait croire qu'il suffit de publier les
+  // sources : c'est faux. Node n'applique PAS le retrait des types aux fichiers
+  // situés dans `node_modules`. Un paquet livré en `.ts` brut serait
+  // inutilisable par tous ses consommateurs.
+  //
+  // On compile donc vers `dist/` : du JavaScript ESM, plus les déclarations de
+  // types. Aucune dépendance d'exécution n'est ajoutée — TypeScript reste un
+  // outil de développement.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "src",
+
+    // Les sources importent en `./money.ts` ; l'émission doit écrire `./money.js`.
+    // Disponible depuis TypeScript 5.7.
+    "rewriteRelativeImportExtensions": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    // Le consommateur ne doit pas hériter de nos réglages stricts, mais il doit
+    // pouvoir remonter jusqu'à la source depuis son débogueur.
+    "removeComments": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["test/**/*", "demo.ts"]
+}

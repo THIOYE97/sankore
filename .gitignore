@@ -10,3 +10,4 @@ coverage/
 
 # Statistiques de trafic — données privées, à ne pas publier
 .trafic/
+*.tgz
