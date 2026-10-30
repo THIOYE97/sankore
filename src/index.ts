@@ -73,6 +73,14 @@ export {
 } from './core/observability.ts';
 export type { Observer, Observation, ObservationKind, RedactOptions } from './core/observability.ts';
 
+/** Disjoncteur : cesser d'appeler un fournisseur en panne. */
+export { CircuitBreaker, BreakerRegistry, HEALTH_SIGNALS } from './core/breaker.ts';
+export type { BreakerOptions, BreakerState } from './core/breaker.ts';
+
+/** Limiteur de débit : tenir la cadence que le fournisseur accepte. */
+export { RateLimiter } from './core/limiter.ts';
+export type { RateLimiterOptions } from './core/limiter.ts';
+
 // Fournisseur simulateur — tests d'intégration et démonstrations.
 export { SandboxProvider } from './providers/sandbox.ts';
 export type { SandboxOptions, Scenario } from './providers/sandbox.ts';
