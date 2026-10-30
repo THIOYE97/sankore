@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { Router } from '../src/core/router.ts';
 import { Money } from '../src/core/money.ts';
 import { PaymentError } from '../src/core/errors.ts';
-import { withIdempotency, MemoryIdempotencyStore, DuplicateInFlightError } from '../src/core/idempotency.ts';
+import {
+    withIdempotency, resolveReconciliation, MemoryIdempotencyStore,
+    DuplicateInFlightError, ReconciliationRequiredError,
+} from '../src/core/idempotency.ts';
+import { isFinal } from '../src/core/status.ts';
 import type { PaymentProvider, PaymentRequest, PaymentResult, Capability } from '../src/core/provider.ts';
 
 /** Fournisseur en bouchon, paramétrable — sert de modèle aux vrais. */
@@ -147,12 +151,72 @@ describe('Idempotence — jamais deux fois', () => {
         await enCours;
     });
 
-    test('un échec libère la clé — une panne ne bloque pas une référence', async () => {
+    test('un échec CERTAIN libère la clé — un refus ne bloque pas une référence', async () => {
         const store = new MemoryIdempotencyStore();
+        // `insufficient_funds` est un refus formulé par le fournisseur : il
+        // prouve que rien n'a été engagé. La référence doit redevenir utilisable.
         await assert.rejects(() =>
-            withIdempotency('REF-3', { store }, async () => { throw new Error('panne réseau'); })
+            withIdempotency('REF-3', { store }, async () => {
+                throw new PaymentError({ code: 'insufficient_funds' });
+            })
         );
         const res = await withIdempotency('REF-3', { store }, async () => ({ reference: 'REF-3', status: 'succeeded' as const }));
+        assert.equal(res.status, 'succeeded');
+    });
+
+    test('un TIMEOUT garde la clé prise et refuse le rejeu — c’est ce qui évite le double paiement', async () => {
+        const store = new MemoryIdempotencyStore();
+        await assert.rejects(() =>
+            withIdempotency('REF-4', { store }, async () => {
+                throw new PaymentError({ code: 'network_timeout' });
+            })
+        );
+
+        const rec = await store.get('REF-4');
+        assert.equal(rec?.state, 'needs_reconciliation', 'la clé ne doit PAS être libérée');
+
+        let rejoue = false;
+        await assert.rejects(
+            () => withIdempotency('REF-4', { store }, async () => {
+                rejoue = true;
+                return { reference: 'REF-4', status: 'succeeded' as const };
+            }),
+            ReconciliationRequiredError
+        );
+        assert.equal(rejoue, false, 'rejouer après un timeout paierait peut-être deux fois');
+    });
+
+    test('une exception inattendue est traitée comme incertaine, pas comme bénigne', async () => {
+        // Un bogue d’adaptateur peut survenir APRÈS que la requête HTTP a abouti.
+        // Libérer la clé ferait payer ce bogue en double virement.
+        const store = new MemoryIdempotencyStore();
+        await assert.rejects(() =>
+            withIdempotency('REF-5', { store }, async () => { throw new Error('TypeError quelconque'); })
+        );
+        const rec = await store.get('REF-5');
+        assert.equal(rec?.state, 'needs_reconciliation');
+    });
+
+    test('la réconciliation clôt le dossier et débloque les rejeux', async () => {
+        const store = new MemoryIdempotencyStore();
+        await assert.rejects(() =>
+            withIdempotency('REF-6', { store }, async () => {
+                throw new PaymentError({ code: 'network_timeout' });
+            })
+        );
+
+        // Ce que le fournisseur répond vraiment, une fois interrogé.
+        const constate: PaymentResult = { reference: 'REF-6', status: 'succeeded' };
+        const issue = await resolveReconciliation('REF-6', store, constate, isFinal);
+        assert.equal(issue, 'completed');
+
+        // Le rejeu rend désormais le résultat constaté, sans rien relancer.
+        let rejoue = false;
+        const res = await withIdempotency('REF-6', { store }, async () => {
+            rejoue = true;
+            return { reference: 'REF-6', status: 'failed' as const };
+        });
+        assert.equal(rejoue, false);
         assert.equal(res.status, 'succeeded');
     });
 });

@@ -61,8 +61,21 @@ export type {
 export { Router } from './core/router.ts';
 export type { RouteQuery, RouterOptions, RankFn } from './core/router.ts';
 
-export { withIdempotency, MemoryIdempotencyStore, DuplicateInFlightError } from './core/idempotency.ts';
-export type { IdempotencyStore, IdempotencyRecord, IdempotencyOptions } from './core/idempotency.ts';
+export {
+    withIdempotency,
+    resolveReconciliation,
+    safeToRelease,
+    MemoryIdempotencyStore,
+    SqlIdempotencyStore,
+    DuplicateInFlightError,
+    ReconciliationRequiredError,
+} from './core/idempotency.ts';
+export type {
+    IdempotencyStore,
+    IdempotencyRecord,
+    IdempotencyState,
+    IdempotencyOptions,
+} from './core/idempotency.ts';
 
 // Mécanique HTTP réutilisable par tout adaptateur fournisseur.
 export { HttpClient, mapHttpStatus, parseRetryAfter, verifyHmacSignature } from './core/http.ts';
@@ -89,6 +102,14 @@ export type { BreakerOptions, BreakerState } from './core/breaker.ts';
 /** Limiteur de débit : tenir la cadence que le fournisseur accepte. */
 export { RateLimiter } from './core/limiter.ts';
 export type { RateLimiterOptions } from './core/limiter.ts';
+
+/** Réconciliation : constater ce qui s'est réellement passé. */
+export { Reconciler } from './core/reconciler.ts';
+export type { ReconcileTask, ReconcileOutcome, ReconcilerOptions } from './core/reconciler.ts';
+
+/** Pont SQL : brancher une base partagée sans imposer de pilote. */
+export { PG_PLACEHOLDER, MYSQL_PLACEHOLDER } from './core/sql.ts';
+export type { SqlRunner, SqlResult, Placeholder } from './core/sql.ts';
 
 // Fournisseur simulateur — tests d'intégration et démonstrations.
 export { SandboxProvider } from './providers/sandbox.ts';
