@@ -59,7 +59,7 @@ export type {
 } from './core/provider.ts';
 
 export { Router } from './core/router.ts';
-export type { RouteQuery, RouterOptions, RankFn } from './core/router.ts';
+export type { RouteQuery, RouterOptions, RouterIdempotency, RankFn } from './core/router.ts';
 
 export {
     withIdempotency,

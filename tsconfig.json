@@ -9,7 +9,12 @@
 
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": false,
+    // Distingue « champ absent » de « champ présent valant undefined ».
+    // Sur un type comme PaymentResult, où `fee`, `error` et `action` sont
+    // optionnels et porteurs de sens, la nuance n'est pas académique : un
+    // `{ fee: undefined }` sérialisé puis relu ne dit pas la même chose qu'un
+    // objet sans `fee`, et c'est le genre d'écart qui se découvre en caisse.
+    "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
