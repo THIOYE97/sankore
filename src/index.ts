@@ -18,6 +18,8 @@
  * est disponible : contact@relayops.africa
  */
 
+export { VERSION, USER_AGENT } from './core/version.ts';
+
 export { Money, MoneyError, currencyExponent } from './core/money.ts';
 export type { Currency } from './core/money.ts';
 
@@ -50,16 +52,26 @@ export type {
 export { Router } from './core/router.ts';
 export type { RouteQuery, RouterOptions, RankFn } from './core/router.ts';
 
-export {
-    withIdempotency,
-    MemoryIdempotencyStore,
-    DuplicateInFlightError,
-} from './core/idempotency.ts';
+export { withIdempotency, MemoryIdempotencyStore, DuplicateInFlightError } from './core/idempotency.ts';
 export type { IdempotencyStore, IdempotencyRecord, IdempotencyOptions } from './core/idempotency.ts';
 
 // Mécanique HTTP réutilisable par tout adaptateur fournisseur.
 export { HttpClient, mapHttpStatus, verifyHmacSignature } from './core/http.ts';
 export type { HttpOptions, HttpRequest, HttpResponse } from './core/http.ts';
+
+// --- Exploitation : ce qu'une DSI exige autour du paiement lui-même ---
+
+/** Observabilité : journaux structurés, métriques, traces — sans dépendance. */
+export {
+    redact,
+    scrubPath,
+    maskIdentifier,
+    jsonObserver,
+    composeObservers,
+    safeObserver,
+    silentObserver,
+} from './core/observability.ts';
+export type { Observer, Observation, ObservationKind, RedactOptions } from './core/observability.ts';
 
 // Fournisseur simulateur — tests d'intégration et démonstrations.
 export { SandboxProvider } from './providers/sandbox.ts';
