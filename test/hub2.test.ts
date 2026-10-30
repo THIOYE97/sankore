@@ -423,7 +423,9 @@ describe('Hub2 — réconciliation par référence', () => {
         const { provider } = hub2([{ status: 200, body: [] }]);
         await assert.rejects(
             () => provider.fetchStatus('PAY-INEXISTANT'),
-            (e: PaymentError) => e.code === 'invalid_request'
+            // `not_found` est un verdict : rien n'est parti. C'est ce code que le
+            // `Reconciler` exige pour relâcher un verrou d'idempotence.
+            (e: PaymentError) => e.code === 'not_found'
         );
     });
 

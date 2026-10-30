@@ -16,6 +16,9 @@ import { Money } from '../core/money.ts';
 import type { Currency } from '../core/money.ts';
 import { PaymentError } from '../core/errors.ts';
 import { HttpClient } from '../core/http.ts';
+import type { HttpOptions } from '../core/http.ts';
+import type { RateLimiter } from '../core/limiter.ts';
+import type { Observer } from '../core/observability.ts';
 import type { Capability, CountryCode, Direction } from '../core/provider.ts';
 
 export const DEFAULT_BASE_URL = 'https://api.hub2.io';
@@ -127,23 +130,40 @@ export interface Hub2Options {
      * Sans elle, `parseWebhook` normalise l'événement SANS l'authentifier.
      */
     verifyWebhook?: (rawBody: string, headers: Record<string, string>) => boolean;
+    /**
+     * Limiteur de débit partagé pour CE fournisseur.
+     *
+     * À l'échelle du processus : deux `Hub2Provider` visant le même compte
+     * doivent recevoir le même limiteur, sans quoi Hub2 voit le double de la
+     * cadence autorisée.
+     */
+    limiter?: RateLimiter;
+    /** Récepteur d'observations — journaux, métriques, traces. */
+    observer?: Observer;
     /** Injectable pour les tests — évite tout réseau. */
     fetchImpl?: typeof fetch;
 }
 
 /** Monte le client HTTP avec les trois en-têtes d'authentification de Hub2. */
 export function buildHttp(opts: Hub2Options, environment: 'live' | 'sandbox'): HttpClient {
-    return new HttpClient({
+    const http: HttpOptions = {
         baseUrl: opts.baseUrl ?? DEFAULT_BASE_URL,
-        timeoutMs: opts.timeoutMs,
-        maxRetries: opts.maxRetries,
-        fetchImpl: opts.fetchImpl,
         defaultHeaders: {
             ApiKey: opts.apiKey,
             MerchantId: opts.merchantId,
             Environment: environment,
         },
-    });
+    };
+    // Affectation conditionnelle plutôt que `timeoutMs: opts.timeoutMs` : avec
+    // `exactOptionalPropertyTypes`, poser explicitement `undefined` n'est PAS
+    // la même chose que ne rien poser — et ici seule la seconde laisse le
+    // défaut du client HTTP s'appliquer.
+    if (opts.timeoutMs !== undefined) http.timeoutMs = opts.timeoutMs;
+    if (opts.maxRetries !== undefined) http.maxRetries = opts.maxRetries;
+    if (opts.fetchImpl !== undefined) http.fetchImpl = opts.fetchImpl;
+    if (opts.limiter !== undefined) http.limiter = opts.limiter;
+    if (opts.observer !== undefined) http.observer = opts.observer;
+    return new HttpClient(http);
 }
 
 /* ------------------------------------------------------------------ *

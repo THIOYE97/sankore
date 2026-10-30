@@ -312,7 +312,7 @@ describe('Hub2 encaissement — confirm()', () => {
         const { provider } = hub2([{ status: 200, body: [] }]);
         await assert.rejects(
             () => provider.confirm('ENC-INEXISTANT', '1234'),
-            (e: PaymentError) => e.code === 'invalid_request'
+            (e: PaymentError) => e.code === 'not_found'
         );
     });
 });
@@ -484,10 +484,11 @@ describe('Hub2 encaissement — ce qui est refusé sans appeler le réseau', () 
 
     test('l’opérateur reste obligatoire', async () => {
         const { provider, calls } = hub2([]);
+        const { institution: _omis, ...sansOperateur } = COLLECT.account;
         await assert.rejects(
             () => provider.execute({
                 ...COLLECT,
-                account: { ...COLLECT.account, institution: undefined },
+                account: sansOperateur,
             }),
             (e: PaymentError) => e.code === 'invalid_request'
         );
@@ -588,7 +589,7 @@ describe('Hub2 encaissement — réconciliation', () => {
         const { provider } = hub2([{ status: 200, body: [] }]);
         await assert.rejects(
             () => provider.fetchStatus('INEXISTANT'),
-            (e: PaymentError) => e.code === 'invalid_request'
+            (e: PaymentError) => e.code === 'not_found'
         );
     });
 

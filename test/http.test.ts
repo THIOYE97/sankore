@@ -27,7 +27,10 @@ describe('HttpClient — traduction des statuts', () => {
     test('les statuts HTTP deviennent des codes normalisés', () => {
         assert.equal(mapHttpStatus(401), 'authentication_failed');
         assert.equal(mapHttpStatus(400), 'invalid_request');
-        assert.equal(mapHttpStatus(404), 'invalid_account');
+        // Un 404 dit « cette ressource n'existe pas chez le fournisseur ».
+        // Le traduire en `invalid_account` annoncerait au client que SON numéro
+        // est invalide — un message faux, pour une cause souvent interne.
+        assert.equal(mapHttpStatus(404), 'not_found');
         assert.equal(mapHttpStatus(409), 'duplicate_request');
         assert.equal(mapHttpStatus(429), 'rate_limited');
         assert.equal(mapHttpStatus(503), 'provider_unavailable');

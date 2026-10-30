@@ -235,7 +235,7 @@ export class Hub2PayIn {
         const intent = await this.findIntent(reference);
         if (!intent) {
             throw new PaymentError({
-                code: 'invalid_request',
+                code: 'not_found',
                 provider: this.name,
                 message: `Hub2 ne connaît aucun encaissement de référence ${reference}`,
             });

@@ -30,6 +30,7 @@ import { PaymentError } from '../core/errors.ts';
 import type { ErrorCode } from '../core/errors.ts';
 import type { PaymentStatus } from '../core/status.ts';
 import { HttpClient } from '../core/http.ts';
+import type { HttpOptions } from '../core/http.ts';
 import type {
     PaymentProvider, PaymentRequest, PaymentResult,
     Capability, WebhookEvent, CountryCode, Account, Direction,
@@ -117,9 +118,11 @@ export class Hub2Provider implements PaymentProvider {
 
     private readonly http: HttpClient;
     private readonly caps: readonly Capability[];
-    private readonly businessName?: string;
-    private readonly origin?: { name?: string; country?: CountryCode };
-    private readonly verifyWebhook?: (rawBody: string, headers: Record<string, string>) => boolean;
+    // Déclarés explicitement nullables et non optionnels : un champ de classe
+    // alimenté par une option absente VAUT `undefined`, il n'est pas « absent ».
+    private readonly businessName: string | undefined;
+    private readonly origin: { name?: string; country?: CountryCode } | undefined;
+    private readonly verifyWebhook: ((rawBody: string, headers: Record<string, string>) => boolean) | undefined;
     private readonly payin: Hub2PayIn;
 
     constructor(opts: Hub2Options) {
@@ -161,10 +164,9 @@ export class Hub2Provider implements PaymentProvider {
         directions?: readonly Direction[];
     } = {}): Promise<readonly Capability[]> {
         const directions = opts.directions ?? (['payout', 'payin'] as const);
-        const http = new HttpClient({
-            baseUrl: opts.baseUrl ?? DEFAULT_BASE_URL,
-            fetchImpl: opts.fetchImpl,
-        });
+        const httpOpts: HttpOptions = { baseUrl: opts.baseUrl ?? DEFAULT_BASE_URL };
+        if (opts.fetchImpl !== undefined) httpOpts.fetchImpl = opts.fetchImpl;
+        const http = new HttpClient(httpOpts);
         const res = await http.request({ method: 'GET', path: '/data/providers' }, 'hub2');
         if (!Array.isArray(res.body)) {
             throw new PaymentError({
@@ -299,8 +301,13 @@ export class Hub2Provider implements PaymentProvider {
         const collected = await this.payin.fetchByReference(reference);
         if (collected) return collected;
 
+        // `not_found` et non `invalid_request` : c'est un VERDICT exploitable.
+        // Il affirme que Hub2 ne connaît pas cette référence, donc que rien ne
+        // lui est parvenu. Le `Reconciler` s'appuie dessus pour relâcher un
+        // verrou d'idempotence en sûreté — c'est le seul chemin par lequel un
+        // rejeu après timeout devient légitime.
         throw new PaymentError({
-            code: 'invalid_request',
+            code: 'not_found',
             provider: this.name,
             message: `Hub2 ne connaît aucune opération de référence ${reference}`,
         });

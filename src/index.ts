@@ -33,8 +33,17 @@ export {
 } from './core/status.ts';
 export type { PaymentStatus } from './core/status.ts';
 
-export { PaymentError, isRetryable, needsReconciliation, customerMessage } from './core/errors.ts';
-export type { ErrorCode } from './core/errors.ts';
+export {
+    PaymentError,
+    isRetryable,
+    needsReconciliation,
+    customerMessage,
+    registerCustomerMessages,
+    availableLocales,
+    ERROR_CODES,
+    DEFAULT_LOCALE,
+} from './core/errors.ts';
+export type { ErrorCode, Locale } from './core/errors.ts';
 
 export type {
     PaymentProvider,
@@ -56,7 +65,7 @@ export { withIdempotency, MemoryIdempotencyStore, DuplicateInFlightError } from 
 export type { IdempotencyStore, IdempotencyRecord, IdempotencyOptions } from './core/idempotency.ts';
 
 // Mécanique HTTP réutilisable par tout adaptateur fournisseur.
-export { HttpClient, mapHttpStatus, verifyHmacSignature } from './core/http.ts';
+export { HttpClient, mapHttpStatus, parseRetryAfter, verifyHmacSignature } from './core/http.ts';
 export type { HttpOptions, HttpRequest, HttpResponse } from './core/http.ts';
 
 // --- Exploitation : ce qu'une DSI exige autour du paiement lui-même ---

@@ -144,7 +144,7 @@ export class SandboxProvider implements PaymentProvider {
         const rec = this.store.get(reference);
         if (!rec) {
             throw new PaymentError({
-                code: 'invalid_request',
+                code: 'not_found',
                 provider: this.name,
                 message: `référence inconnue : ${reference}`,
             });
@@ -173,12 +173,14 @@ export class SandboxProvider implements PaymentProvider {
         if (typeof payload !== 'object' || payload === null) return null;
         const p = payload as Record<string, unknown>;
         if (typeof p['reference'] !== 'string' || typeof p['status'] !== 'string') return null;
-        return {
+
+        const event: WebhookEvent = {
             reference: p['reference'],
-            providerReference: typeof p['providerReference'] === 'string' ? p['providerReference'] : undefined,
             status: p['status'] as PaymentStatus,
             raw: payload,
         };
+        if (typeof p['providerReference'] === 'string') event.providerReference = p['providerReference'];
+        return event;
     }
 
     async balance(currency: Currency, _country?: CountryCode): Promise<Money> {
@@ -186,13 +188,14 @@ export class SandboxProvider implements PaymentProvider {
     }
 
     private toResult(rec: Record_): PaymentResult {
-        return {
+        const result: PaymentResult = {
             reference: rec.reference,
             status: rec.status,
             providerReference: rec.providerReference,
-            fee: rec.fee,
-            error: rec.error,
             raw: { simulated: true },
         };
+        if (rec.fee) result.fee = rec.fee;
+        if (rec.error) result.error = rec.error;
+        return result;
     }
 }

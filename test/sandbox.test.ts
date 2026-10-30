@@ -68,7 +68,7 @@ describe('SandboxProvider — le cas du timeout', () => {
     test('une référence inconnue est signalée', async () => {
         await assert.rejects(
             () => provider().fetchStatus('JAMAIS-VU'),
-            (e: PaymentError) => e.code === 'invalid_request'
+            (e: PaymentError) => e.code === 'not_found'
         );
     });
 });
