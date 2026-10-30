@@ -1,0 +1,24 @@
+# Propriétaires du code.
+#
+# Toute modification demande une revue de RelayOps. Les chemins listés
+# séparément ne sont pas plus « importants » : ce sont ceux où une erreur ne se
+# voit pas en relecture rapide et coûte de l'argent en production.
+
+*                           @THIOYE97
+
+# Les garanties du projet. Une modification ici change ce que Sankoré PROMET.
+/src/core/idempotency.ts    @THIOYE97
+/src/core/errors.ts         @THIOYE97
+/src/core/status.ts         @THIOYE97
+/src/core/money.ts          @THIOYE97
+
+# La frontière de confiance : ce qui part sur le réseau, ce qui en revient.
+/src/core/http.ts           @THIOYE97
+/src/core/webhook.ts        @THIOYE97
+/src/core/observability.ts  @THIOYE97
+
+# Engagements vis-à-vis des utilisateurs et des acheteurs.
+/SECURITY.md                @THIOYE97
+/VERSIONING.md              @THIOYE97
+/LICENSE                    @THIOYE97
+/.github/workflows/         @THIOYE97

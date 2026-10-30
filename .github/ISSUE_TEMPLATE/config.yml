@@ -1,0 +1,15 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Faille de sécurité
+    url: https://github.com/THIOYE97/sankore/blob/main/SECURITY.md
+    about: >-
+      N'ouvrez PAS d'issue publique. Écrivez à security@relayops.africa —
+      accusé de réception sous 72 h.
+  - name: Licence commerciale
+    url: mailto:contact@relayops.africa
+    about: >-
+      Produit fermé, SaaS propriétaire, plateforme interne non publiée :
+      l'AGPL ne convient pas, parlons-en.
+  - name: Intégration, audit, maintenance
+    url: https://relayops.africa
+    about: Si vous préférez ne pas intégrer vous-même.

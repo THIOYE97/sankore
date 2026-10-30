@@ -142,4 +142,4 @@ for (const q of [
 info('Stripe, Paystack et Flutterwave ne couvrent pas le rail « mfi ».');
 
 console.log(`\n${c.or}${'─'.repeat(64)}${c.z}`);
-console.log(`  ${c.gras}github.com/THIOYE97/sankore${c.z}  ${c.gris}— MIT, zéro dépendance${c.z}\n`);
+console.log(`  ${c.gras}github.com/THIOYE97/sankore${c.z}  ${c.gris}— AGPL-3.0 ou licence commerciale, zéro dépendance${c.z}\n`);

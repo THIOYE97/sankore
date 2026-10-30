@@ -1,0 +1,177 @@
+# Intégration continue.
+#
+# Quatre travaux, chacun répondant à une question différente :
+#
+#   verifier       — le code est-il juste ? Conventions, types, 300+ tests et
+#                    seuils de couverture, sur Node 22 et 24 (les sources
+#                    s'exécutent directement en TypeScript, ce que Node 20 ne
+#                    sait pas faire).
+#   compile        — ce qu'on PUBLIE fonctionne-t-il ? Le paquet est empaqueté,
+#                    installé dans un projet tiers vierge, et exercé en
+#                    JavaScript nu. Une bibliothèque qui ne vérifie que ses
+#                    sources livre un `dist/` que personne n'a exécuté.
+#   compatibilite  — le socle annoncé dans `engines.node` tient-il ? Node 20
+#                    n'exécute pas les sources, on y vérifie donc le compilé.
+#   securite       — la surface installée par un consommateur est-elle saine ?
+#
+# Aucun secret n'est requis : rien ici ne touche à un fournisseur réel.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verifier:
+    name: Vérifications (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.x', '24.x']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      # `npm ci` et non `npm install` : la CI installe ce que le verrou dit,
+      # jamais une résolution fraîche. Aucune dépendance d'exécution n'est
+      # attendue — seul TypeScript, en outil de développement.
+      - run: npm ci
+
+      - name: Conventions
+        run: npm run lint
+
+      - name: Cohérence des versions
+        run: npm run check:version
+
+      - name: Types
+        run: npm run typecheck
+
+      - name: Tests et couverture
+        run: npm run test:coverage
+
+      - name: Démonstration exécutable
+        run: npm run demo
+
+      # Le paquet publié ne doit traîner aucune dépendance d'exécution. Le
+      # vérifier en CI est plus fiable que de le promettre dans un README.
+      - name: Aucune dépendance d'exécution
+        run: |
+          deps=$(node -e "const p=require('./package.json');console.log(Object.keys(p.dependencies||{}).length)")
+          if [ "$deps" != "0" ]; then
+            echo "✗ $deps dépendance(s) d'exécution — le paquet doit rester autonome"
+            exit 1
+          fi
+          echo "✓ zéro dépendance d'exécution"
+
+  compile:
+    name: Paquet publié
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      # Le paquet est consommé par un projet qui n'a PAS nos réglages
+      # TypeScript. On vérifie donc que `dist/` s'importe tel quel, en
+      # JavaScript nu, depuis un dossier qui ne connaît rien du dépôt.
+      - name: Import du paquet compilé
+        run: |
+          npm pack --silent
+          mkdir -p /tmp/consommateur && cd /tmp/consommateur
+          npm init -y --silent > /dev/null
+          npm install "$GITHUB_WORKSPACE"/sankore-*.tgz --silent
+          cat > verif.mjs <<'JS'
+          import { Money, Router, SandboxProvider, VERSION, PaymentError } from 'sankore';
+          import assert from 'node:assert/strict';
+
+          // Le piège du franc CFA : zéro décimale.
+          assert.equal(Money.major(1500, 'XOF').amount, 1500);
+          assert.equal(Money.major(15, 'EUR').amount, 1500);
+
+          // Un paiement de bout en bout, sans réseau.
+          const r = new Router([new SandboxProvider()]);
+          const res = await r.execute({
+            reference: 'VERIF-1',
+            direction: 'payout',
+            amount: Money.major(10000, 'XOF'),
+            account: { rail: 'mobile_money', country: 'ML', identifier: '22370000000' },
+          });
+          assert.equal(res.status, 'succeeded');
+
+          // La règle qui protège l'argent, telle qu'elle est livrée.
+          assert.equal(new PaymentError({ code: 'network_timeout' }).retryable, false);
+
+          console.log(`✓ sankore ${VERSION} s'importe et fonctionne depuis un projet tiers`);
+          JS
+          node verif.mjs
+
+      - name: Contenu du paquet
+        run: |
+          npm pack --dry-run 2>&1 | tee /tmp/contenu.txt
+          # Ni sources TypeScript, ni tests, ni données de trafic dans le paquet.
+          if grep -qE 'src/|test/|\.trafic' /tmp/contenu.txt; then
+            echo "✗ le paquet embarque des fichiers qui n'ont rien à y faire"
+            exit 1
+          fi
+          echo "✓ contenu du paquet conforme"
+
+  compatibilite:
+    name: Node 20 (socle annoncé)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: npm
+
+      - run: npm ci
+      # Node 20 ne sait pas exécuter les sources `.ts` : on y vérifie donc ce
+      # que les consommateurs reçoivent réellement, le JavaScript compilé.
+      - run: npm run build
+      - name: Import sur le socle minimal
+        run: |
+          node --input-type=module -e "
+            import { Money, VERSION } from './dist/index.js';
+            import assert from 'node:assert/strict';
+            assert.equal(Money.major(1500, 'XOF').amount, 1500);
+            console.log('✓ sankore ' + VERSION + ' tourne sur Node ' + process.version);
+          "
+
+  securite:
+    name: Audit des dépendances
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+      - run: npm ci
+      # `--omit=dev` est volontaire : ce qui compte pour un consommateur, c'est
+      # la surface qu'il installe. Les outils de développement ne partent pas
+      # avec le paquet.
+      - run: npm audit --omit=dev --audit-level=moderate
