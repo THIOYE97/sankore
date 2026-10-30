@@ -108,6 +108,29 @@ export interface WebhookEvent {
     status: PaymentStatus;
     error?: PaymentError;
     raw: unknown;
+    /**
+     * Identifiant de l'ÉVÉNEMENT chez le fournisseur — pas de l'opération.
+     *
+     * C'est ce qui permet de reconnaître un doublon. Tous les agrégateurs
+     * réémettent : ils renvoient le même événement jusqu'à recevoir un 2xx, et
+     * certains le renvoient quand même. Sans cet identifiant, chaque réémission
+     * rejoue les effets de bord de l'application — une notification au client,
+     * un débit de stock, une écriture comptable.
+     *
+     * Absent quand le fournisseur n'en publie pas : `WebhookInbox` retombe alors
+     * sur l'empreinte du corps brut.
+     */
+    eventId?: string;
+    /**
+     * Instant où l'événement a été produit CHEZ LE FOURNISSEUR, en
+     * millisecondes depuis l'époque Unix.
+     *
+     * À ne pas confondre avec l'instant de réception. Deux webhooks peuvent
+     * arriver dans l'ordre inverse de leur production — c'est fréquent quand le
+     * premier a été réémis après un échec de livraison. Sans cette date, rien ne
+     * permet de savoir lequel dit la vérité la plus récente.
+     */
+    occurredAt?: number;
 }
 
 export interface PaymentProvider {

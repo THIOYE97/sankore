@@ -103,6 +103,10 @@ export type { BreakerOptions, BreakerState } from './core/breaker.ts';
 export { RateLimiter } from './core/limiter.ts';
 export type { RateLimiterOptions } from './core/limiter.ts';
 
+/** Réception des webhooks : signature, doublon, ordre, transition. */
+export { WebhookInbox, MemoryWebhookLog, SqlWebhookLog } from './core/webhook.ts';
+export type { WebhookLog, WebhookDecision, WebhookInboxOptions } from './core/webhook.ts';
+
 /** Réconciliation : constater ce qui s'est réellement passé. */
 export { Reconciler } from './core/reconciler.ts';
 export type { ReconcileTask, ReconcileOutcome, ReconcilerOptions } from './core/reconciler.ts';
